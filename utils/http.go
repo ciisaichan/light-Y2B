@@ -1,13 +1,25 @@
 package utils
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+
+	"github.com/ciisaichan/light-Y2B/global"
 )
 
 func HttpGet(url string, headers map[string]string) ([]byte, error) {
-	client := http.Client{}
+	client := (&http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+			// 使用环境变量的代理 为 http.ProxyFromEnvironment
+
+			Proxy: http.ProxyURL(GetProxyUrl(global.LiveSetting.Proxy)),
+		}})
 	reqest, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
@@ -37,4 +49,13 @@ func HttpGet(url string, headers map[string]string) ([]byte, error) {
 	}
 
 	return respByte, nil
+}
+
+// 将rawurl 转换为 url.URL
+func GetProxyUrl(proxy string) *url.URL {
+	proxyUrl, err := url.Parse(proxy)
+	if err != nil {
+		return nil
+	}
+	return proxyUrl
 }

@@ -5,3 +5,5 @@ Live:
   YoutubeUrl: 
   # Youtube 登录 Cookie，用于限定直播等
   YoutubeCookie: 
+  # 代理地址
+  Proxy: http://127.0.0.1:51542
