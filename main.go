@@ -4,16 +4,14 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
 
-	"github.com/ciisaichan/light-Y2B/common/setting"
+	_ "github.com/ciisaichan/light-Y2B/bootstrap"
 	"github.com/ciisaichan/light-Y2B/ffmpeg"
-
 	"github.com/ciisaichan/light-Y2B/global"
 	"github.com/ciisaichan/light-Y2B/logger"
 	"github.com/ciisaichan/light-Y2B/platform/youtube"
@@ -35,17 +33,6 @@ var (
 )
 
 func init() {
-	// 读取配置文件
-	{
-		Setting, err := setting.NewSetting()
-		if err != nil {
-			log.Println("init.setting.NewSetting():", err)
-		}
-		err = ReadConfigToSetting(Setting)
-		if err != nil {
-			log.Fatalf("init.setupSetting err: %v", err)
-		}
-	}
 	flag.StringVar(&ytLiveUrl, "yt-url", "", "Youtube 直播间或频道链接")
 	flag.StringVar(&ytCookie, "yt-cookie", "", "Youtube 登录 Cookie，用于限定直播等")
 	flag.StringVar(&pushURL, "push-url", "", "推流链接，由服务器地址和串流密钥拼接而成")
@@ -130,14 +117,4 @@ func checkLive() {
 		logger.L.Info("频道未直播，等待...")
 	}
 
-}
-
-// 读取配置文件
-func ReadConfigToSetting(setting *setting.Setting) error {
-	var err error
-	err = setting.ReadSection("Live", &global.LiveSetting)
-	if err != nil {
-		return err
-	}
-	return nil
 }

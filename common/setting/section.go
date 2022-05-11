@@ -4,6 +4,7 @@ type LiveSettingS struct {
 	BiliRtmpUrl   string // 推流链接，由服务器地址和串流密钥拼接而成
 	YoutubeUrl    string // Youtube 直播间或频道链接
 	YoutubeCookie string // Youtube 登录 Cookie，用于限定直播等
+	Proxy         string // 代理地址
 }
 
 // 进行反序列化
