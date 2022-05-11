@@ -2,9 +2,10 @@ package youtube
 
 import (
 	"fmt"
-	"light-Y2B/utils"
 	"regexp"
 	"strings"
+
+	"github.com/ciisaichan/light-Y2B/utils"
 )
 
 var hlsvpRegexp *regexp.Regexp

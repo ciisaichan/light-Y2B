@@ -1,8 +1,9 @@
 package youtube
 
 import (
-	"light-Y2B/utils"
 	"strings"
+
+	"github.com/ciisaichan/light-Y2B/utils"
 )
 
 func IsLiving(url string, cookie string) (bool, error) {
