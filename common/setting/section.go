@@ -1,8 +1,8 @@
 package setting
 
 type SettingS struct {
-	Live  LiveS
-	Other OtherS
+	Live  LiveS  // 直播设置
+	Other OtherS // 其他设置
 }
 
 type LiveS struct {

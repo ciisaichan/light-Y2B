@@ -57,6 +57,7 @@ func StartCmd(ctx context.Context, ffmpegPath string, params []string, showLog b
 	return err
 }
 
+// 设置cmd环境变量
 func SetCmdEnvironment(cmd *exec.Cmd) error {
 	env := os.Environ()
 	cmdEnv := []string{}

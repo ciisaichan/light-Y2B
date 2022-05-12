@@ -71,6 +71,8 @@ func main() {
 
 	if youtube.IsChannelURL(global.Setting.Live.YoutubeUrl) {
 		ytLiveUrl = global.Setting.Live.YoutubeUrl + "/live"
+	} else {
+		ytLiveUrl = global.Setting.Live.YoutubeUrl
 	}
 
 	go handleLoop()
