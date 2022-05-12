@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-func StartCmd(ctx context.Context, ffmpegPath string, params []string, hideLog bool) error {
+func StartCmd(ctx context.Context, ffmpegPath string, params []string, showLog bool) error {
 	c := exec.CommandContext(ctx, ffmpegPath, params...)
 	SetCmdEnvironment(c)
 	stdout, err := c.StderrPipe()
@@ -33,7 +33,7 @@ func StartCmd(ctx context.Context, ffmpegPath string, params []string, hideLog b
 				if err != nil || err == io.EOF {
 					return
 				}
-				if !hideLog {
+				if showLog {
 					fmt.Print(string(buff))
 				}
 				/*

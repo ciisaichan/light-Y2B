@@ -1,9 +1,0 @@
-Live:
-  # 推流链接，由服务器地址和串流密钥拼接而成
-  BiliRtmpUrl: 
-  # Youtube 直播间或频道链接
-  YoutubeUrl: 
-  # Youtube 登录 Cookie，用于限定直播等
-  YoutubeCookie: 
-  # 代理地址
-  Proxy: http://127.0.0.1:51542

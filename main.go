@@ -4,13 +4,14 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/ciisaichan/light-Y2B/common/setting"
+	"github.com/ciisaichan/light-Y2B/utils"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
 
-	_ "github.com/ciisaichan/light-Y2B/bootstrap"
 	"github.com/ciisaichan/light-Y2B/ffmpeg"
 	"github.com/ciisaichan/light-Y2B/global"
 	"github.com/ciisaichan/light-Y2B/logger"
@@ -18,13 +19,10 @@ import (
 )
 
 var (
-	ytLiveUrl     string
-	ytCookie      string
-	pushURL       string
-	ffmpegPath    string
-	checkDelay    int
-	hideIdleInfo  bool
-	hideFFmpegLog bool
+	configPath string
+	configName string
+
+	ytLiveUrl string
 
 	osChannel  chan os.Signal
 	ctx        context.Context
@@ -33,13 +31,8 @@ var (
 )
 
 func init() {
-	flag.StringVar(&ytLiveUrl, "yt-url", "", "Youtube 直播间或频道链接")
-	flag.StringVar(&ytCookie, "yt-cookie", "", "Youtube 登录 Cookie，用于限定直播等")
-	flag.StringVar(&pushURL, "push-url", "", "推流链接，由服务器地址和串流密钥拼接而成")
-	flag.StringVar(&ffmpegPath, "ff-path", "ffmpeg", "ffmpeg 路径，默认从环境变量获取")
-	flag.IntVar(&checkDelay, "ck-delay", 10, "直播间检查间隔，单位：秒，默认 10 秒")
-	flag.BoolVar(&hideIdleInfo, "hide-idle", false, "是否隐藏等待信息，默认 不隐藏")
-	flag.BoolVar(&hideFFmpegLog, "hide-fflog", false, "是否隐藏 ffmpeg 日志信息，默认 不隐藏")
+	flag.StringVar(&configPath, "c-path", "./", "配置文件目录，不指定默认 当前目录")
+	flag.StringVar(&configName, "c-name", "config", "配置文件名，不指定默认 config (文件后缀需要为.yaml)")
 }
 
 func main() {
@@ -47,13 +40,17 @@ func main() {
 	fmt.Println("# 基于 FFmpeg 的轻量级 Youtube 转播程序\n")
 	flag.Parse()
 
-	if ytLiveUrl == "" || pushURL == "" {
-		flag.Usage()
-		return
+	Setting, err := setting.NewSetting(configPath, configName)
+	if err != nil {
+		panic("读取配置文件失败：" + err.Error())
+	}
+	err = utils.ReadConfigToSetting(Setting)
+	if err != nil {
+		panic("识别配置文件失败：" + err.Error())
 	}
 
-	//os.Setenv("http_proxy", "http://127.0.0.1:8080")
-	//os.Setenv("https_proxy", "http://127.0.0.1:8080")
+	os.Setenv("http_proxy", global.Setting.Other.Proxy)
+	os.Setenv("https_proxy", global.Setting.Other.Proxy)
 
 	osChannel = make(chan os.Signal, 1)
 	signal.Notify(osChannel, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -72,8 +69,8 @@ func main() {
 		}
 	}()
 
-	if youtube.IsChannelURL(ytLiveUrl) {
-		ytLiveUrl = ytLiveUrl + "/live"
+	if youtube.IsChannelURL(global.Setting.Live.YoutubeUrl) {
+		ytLiveUrl = global.Setting.Live.YoutubeUrl + "/live"
 	}
 
 	go handleLoop()
@@ -86,34 +83,34 @@ func main() {
 func handleLoop() {
 	if !global.Aborting {
 		checkLive()
-		time.AfterFunc(time.Duration(checkDelay)*time.Second, handleLoop)
+		time.AfterFunc(time.Duration(global.Setting.Other.CheckDelay)*time.Second, handleLoop)
 	}
 
 }
 
 func checkLive() {
-	living, err := youtube.IsLiving(ytLiveUrl, ytCookie)
+	living, err := youtube.IsLiving(ytLiveUrl, global.Setting.Live.YoutubeCookie)
 	if err != nil {
 		logger.L.Errorf("检查直播间状态失败：%s", err.Error())
 		return
 	}
 	if living {
 		logger.L.Notice("频道直播中，开始推流")
-		m3u8Url, err := youtube.GetLiveStreamURL(ytLiveUrl, ytCookie)
+		m3u8Url, err := youtube.GetLiveStreamURL(ytLiveUrl, global.Setting.Live.YoutubeCookie)
 		if err != nil {
 			logger.L.Errorf("获取直播流地址失败：%s", err.Error())
 			return
 		}
 
 		mainWg.Add(1)
-		ffParams := ffmpeg.GenReBoradcastParams(m3u8Url, pushURL, ytCookie)
-		err = ffmpeg.StartCmd(ctx, ffmpegPath, ffParams, hideFFmpegLog)
+		ffParams := ffmpeg.GenReBoradcastParams(m3u8Url, global.Setting.Live.BiliRtmpUrl, global.Setting.Live.YoutubeCookie)
+		err = ffmpeg.StartCmd(ctx, global.Setting.Other.FFmpegPath, ffParams, global.Setting.Other.FFmpegLogs)
 		if err != nil {
 			logger.L.Errorf("执行推流命令失败：%s", err.Error())
 		}
 		logger.L.Notice("推流结束")
 		mainWg.Done()
-	} else if !hideIdleInfo {
+	} else if global.Setting.Other.IdleInfo {
 		logger.L.Info("频道未直播，等待...")
 	}
 
