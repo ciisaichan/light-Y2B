@@ -21,6 +21,7 @@ import (
 var (
 	configPath string
 	configName string
+	needHelp   bool
 
 	ytLiveUrl string
 
@@ -33,12 +34,18 @@ var (
 func init() {
 	flag.StringVar(&configPath, "c-path", "./", "配置文件目录，不指定默认 当前目录")
 	flag.StringVar(&configName, "c-name", "config", "配置文件名，不指定默认 config (文件后缀需要为.yaml)")
+	flag.BoolVar(&needHelp, "h", false, "显示帮助信息")
 }
 
 func main() {
 	fmt.Printf("# Light-Y2B [%s]\n", global.Version)
 	fmt.Println("# 基于 FFmpeg 的轻量级 Youtube 转播程序\n")
 	flag.Parse()
+
+	if needHelp {
+		flag.Usage()
+		return
+	}
 
 	Setting, err := setting.NewSetting(configPath, configName)
 	if err != nil {
