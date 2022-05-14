@@ -49,8 +49,10 @@ func main() {
 		panic("识别配置文件失败：" + err.Error())
 	}
 
-	os.Setenv("http_proxy", global.Setting.Other.Proxy)
-	os.Setenv("https_proxy", global.Setting.Other.Proxy)
+	if global.Setting.Other.Proxy != "" {
+		os.Setenv("http_proxy", global.Setting.Other.Proxy)
+		os.Setenv("https_proxy", global.Setting.Other.Proxy)
+	}
 
 	osChannel = make(chan os.Signal, 1)
 	signal.Notify(osChannel, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

@@ -6,7 +6,7 @@ Live:
   # Youtube 登录 Cookie，用于限定直播等
   YoutubeCookie:
 Other:
-  # 代理地址
+  # 代理地址（不需要留空即可）
   Proxy: http://127.0.0.1:2080
   # ffmpeg 路径
   FFmpegPath: ffmpeg
